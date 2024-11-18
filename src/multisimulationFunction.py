@@ -7,10 +7,6 @@ try:
     import inputs 
 except:
     import src.inputs as inputs
-try:
-    import paths 
-except:
-    import src.paths as paths
 
 
 def run_simulation(row, scr_gebaeude_id, be_data_original, variable_names, climate_file, start_time, end_time, output_resolution):

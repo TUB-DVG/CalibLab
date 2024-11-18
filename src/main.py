@@ -86,9 +86,9 @@ def main():
     end_calc = time.time()
 
     if output_resolution == None:
-        df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', f'{HeatingEnergy_sum.tolist()}', '-', '-', '-', '-']
+        df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', '{}'.format(HeatingEnergy_sum.tolist()), '-', '-', '-', '-']
     else: 
-        df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', f'{HeatingEnergy_sum['HeatingEnergy'].values.tolist()}', '-', '-', '-', '-']
+        df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', '{}'.format(HeatingEnergy_sum['HeatingEnergy'].values.tolist()), '-', '-', '-', '-']
     df.to_excel(ctrl_file, index=False)
 
 

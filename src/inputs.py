@@ -2,7 +2,6 @@ import pandas as pd
 import os
 import numpy as np
 import pickle
-# import mysql.connector
 try:
     import paths 
 except:
@@ -11,9 +10,8 @@ except:
 ''' Parameter values from the DATES-database '''
 def get_building_inputdata(scr_gebaeude_id):
 
-    variables_df = pd.read_excel(os.path.join(paths.DATA_DIR, 'variables_df.xlsx')) #, index_col=0)
+    variables_df = pd.read_excel(os.path.join(paths.DATA_DIR, 'variables_df.xlsx')) 
     variables_df = variables_df.loc[variables_df["scr_gebaeude_id"] == scr_gebaeude_id]
-    # variables_df.to_excel(os.path.join(paths.DATA_DIR, "variables_df_{}.xlsx".format(scr_gebaeude_id)))
 
     return variables_df
 
@@ -64,8 +62,7 @@ def setup_be_data_original(scr_gebaeude_id, variables_df):
                         "k_L": fixed_variables_bd['k_L']
                         } 
 
-    be_data_original = pd.DataFrame(be_data_original, index=[0])
-    return be_data_original
+    return pd.DataFrame(be_data_original, index=[0])
 
 
 
@@ -73,20 +70,20 @@ def setup_be_data_original(scr_gebaeude_id, variables_df):
 def setup_be_data_original_SA(scr_gebaeude_id, fixed_variables_bd, variables_list):
   
     be_data_original = {"scr_gebaeude_id": scr_gebaeude_id, 
-                        "bak_grob": fixed_variables_bd['bak_grob'], # Category: 1
-                        "plz": fixed_variables_bd['plz'], # 13403
-                        "hk_geb": fixed_variables_bd['hk_geb'], # Category: 1
-                        "uk_geb": fixed_variables_bd['uk_geb'], # Category: 1.02
-                        "w_erz_art_et": fixed_variables_bd['w_erz_art_et'], # Category: 509 = DistrictHeating
-                        "k_erz_art_rk": fixed_variables_bd['k_erz_art_rk'], # Category: 1 = WaterCooledPistonScroll
-                        "qg13": fixed_variables_bd['qg13'], # Category: 1 = AirConditioning
-                        "qi11": fixed_variables_bd['qi11'], # Category: 1 = AirConditioning
-                        "qg21": fixed_variables_bd['qg21'], # Category: 3 = DecentralElectricDHW
-                        "n_ug": fixed_variables_bd['n_ug'], # No basement = 0
-                        "qh1": fixed_variables_bd['qh1'],   # Category: 3
-                        "night_flushing_flow": fixed_variables_bd['night_flushing_flow'], #0 : If yes --> =2, if no --> =0
-                        "unteraw_fl": fixed_variables_bd['unteraw_fl'], #0 = No basement
-                        "k": fixed_variables_bd['k'], # 1.25
+                        "bak_grob": fixed_variables_bd['bak_grob'], 
+                        "plz": fixed_variables_bd['plz'],
+                        "hk_geb": fixed_variables_bd['hk_geb'], 
+                        "uk_geb": fixed_variables_bd['uk_geb'], 
+                        "w_erz_art_et": fixed_variables_bd['w_erz_art_et'], 
+                        "k_erz_art_rk": fixed_variables_bd['k_erz_art_rk'], 
+                        "qg13": fixed_variables_bd['qg13'], 
+                        "qi11": fixed_variables_bd['qi11'], 
+                        "qg21": fixed_variables_bd['qg21'], 
+                        "n_ug": fixed_variables_bd['n_ug'], 
+                        "qh1": fixed_variables_bd['qh1'],   
+                        "night_flushing_flow": fixed_variables_bd['night_flushing_flow'], 
+                        "unteraw_fl": fixed_variables_bd['unteraw_fl'], 
+                        "k": fixed_variables_bd['k'], 
 
                         "q25_1": variables_list[0],
                         "aw_fl": variables_list[1],
@@ -155,7 +152,6 @@ def create_intervals(scr_gebaeude_id):
         return heating_coefficient
 
     building_inputdata = get_building_inputdata(scr_gebaeude_id)
-
     fixed_variables = pd.read_excel(os.path.join(paths.DATA_DIR, 'fixed_variables.xlsx'))
     fixed_variables_bd = fixed_variables[fixed_variables['scr_gebaeude_id'] == scr_gebaeude_id].iloc[0]
 
@@ -172,8 +168,6 @@ def create_intervals(scr_gebaeude_id):
         heat_recovery_efficiency_int = np.multiply(fixed_variables_bd["heat_recovery_efficiency"], group_A).tolist()
 
 
-
-        
     intervals = {"q25_1": np.multiply(building_inputdata["q25_1"].iloc[0], group_B).tolist(),
                 
                 "aw_fl": np.multiply(building_inputdata["aw_fl"].iloc[0], group_A).tolist(),
@@ -223,7 +217,7 @@ def create_intervals(scr_gebaeude_id):
 
 ''' Calibration parameters (Most influential ones from SA) '''
 def get_SA_parameters(scr_gebaeude_id, num_bc_param, num_samples_sa, output_resolution, training_ratio):
-    # Get the names of the most sensitive parameters from the SA
+    # Fetch the names of the most sensitive parameters from the SA
     if output_resolution == None:
         total_Si = pd.read_excel(os.path.join(paths.DATA_DIR, "SA/{}/{}/TotalSi_{}_samples.xlsx".format(scr_gebaeude_id, output_resolution, num_samples_sa)))  
     if output_resolution != None:
@@ -236,6 +230,7 @@ def get_SA_parameters(scr_gebaeude_id, num_bc_param, num_samples_sa, output_reso
     SA_param_names = list(total_Si["parameters"][:num_bc_param])
 
     return total_Si, SA_param_names
+
 
 
 ''' Open trained Meta-model '''
@@ -267,10 +262,9 @@ def gp_metamodel(scr_gebaeude_id, num_bc_param, num_samples_gp, output_resolutio
 
 
   
-
-
 ''' Observed data [BC] '''
 def get_observations(scr_gebaeude_id, climate_file):
+
     if climate_file == "AMY_2010_2022.epw":
         observations = pd.read_excel(os.path.join(paths.DATA_DIR, 'building_yearly_Q2.xlsx')) 
 
@@ -287,20 +281,13 @@ def get_prior_param_values_old(scr_gebaeude_id, num_bc_param, num_samples_gp, ou
     variables_df = get_building_inputdata(scr_gebaeude_id)
     be_data_original = setup_be_data_original(scr_gebaeude_id, variables_df)
 
-    # FROM EXCEL (Indata_GP.xlsx)
-    # Get the names of the calibration parameters (param_names_list)
-    # data_gp = pd.read_excel(os.path.join(paths.DATA_DIR, "GP/{}/{}_bc_param/Indata_GP_{}_{}.xlsx".format(scr_gebaeude_id, num_bc_param, num_samples_gp, output_resolution)), index_col=0)
-    # param_names_list = data_gp.drop("heating_energy", axis=1).columns.tolist()
-
-    # FROM PKL (Indata_GP.pkl)
     file_gp_samples = open(os.path.join(paths.DATA_DIR, "GP/{}/{}_bc_param/Indata_GP_{}_{}.pkl".format(scr_gebaeude_id, num_bc_param, num_samples_gp, output_resolution)), "rb")
     data_gp = pickle.load(file_gp_samples)
     file_gp_samples.close()
     param_names_list = data_gp.drop("heating_energy", axis=1).columns.tolist()
 
-    # Getting the prior parameter mean values
+    # Get the prior parameter mean values
     prior_params_mean = dict(filter(lambda item: item[0] in param_names_list, be_data_original.items()))
-    
     intervals = create_intervals(scr_gebaeude_id)
 
     prior_params_lower = {}
@@ -318,6 +305,7 @@ def get_prior_param_values_old(scr_gebaeude_id, num_bc_param, num_samples_gp, ou
     return param_names_list, prior_params_mean, prior_params_lower, prior_params_upper, prior_params_sigma
 
 
+
 ''' Define: Prior probability distributions [BC]'''
 def get_prior_param_values(scr_gebaeude_id, num_bc_param, num_samples_gp, output_resolution, training_ratio):
     # Get the be_data_original in order to have the prior parameter values
@@ -325,18 +313,13 @@ def get_prior_param_values(scr_gebaeude_id, num_bc_param, num_samples_gp, output
     be_data_original = setup_be_data_original(scr_gebaeude_id, variables_df)
     prior_prob = pd.read_excel(os.path.join(paths.DATA_DIR, 'prior_probability_definition.xlsx'), index_col=0)
 
-    # data_gp = pd.read_excel(os.path.join(paths.DATA_DIR, "GP/{}/{}_bc_param/Indata_GP_{}_{}_samples.xlsx".format(scr_gebaeude_id, num_bc_param, output_resolution, num_samples_gp)), index_col=0)
-
-    #file_gp_samples = open(os.path.join(paths.DATA_DIR, "GP/{}/{}/{}_bc_param/Indata_GP_{}_{}_samples.pkl".format(scr_gebaeude_id, output_resolution, num_bc_param, training_ratio, num_samples_gp)), "rb")
     file_gp_samples = open(os.path.join(paths.DATA_DIR, "GP/{}/{}/{}_bc_param/Indata_GP_{}_{}_samples.pkl".format(scr_gebaeude_id, output_resolution, num_bc_param, training_ratio, num_samples_gp)), "rb")
     data_gp = pickle.load(file_gp_samples)
     file_gp_samples.close()
     param_names_list = data_gp.drop("heating_energy", axis=1).columns.tolist()
 
-
-    # Getting the prior parameter mean values
+    # Get the prior parameter mean values
     prior_params_mean = dict(filter(lambda item: item[0] in param_names_list, be_data_original.items()))
-    
     intervals = create_intervals(scr_gebaeude_id)
 
     prior_params_lower = {}
@@ -350,11 +333,11 @@ def get_prior_param_values(scr_gebaeude_id, num_bc_param, num_samples_gp, output
     prior_params_sigma = {}
     for i in param_names_list:
         prior_params_sigma["{}".format(i)] = prior_prob.loc['{}'.format(i), 'std'] * (intervals["{}".format(i)][1] - intervals["{}".format(i)][0]) + intervals["{}".format(i)][0]
-                                            # var_std_denorm = var_std_norm * (var_max - var_min) + var_min
         
     return param_names_list, prior_params_mean, prior_params_lower, prior_params_upper, prior_params_sigma
 
     
+
 def CF_factors(scr_gebaeude_id, start_time, end_time):
         fixed_variables = pd.read_excel(os.path.join(paths.DATA_DIR, 'fixed_variables.xlsx'))
         plz = int(fixed_variables[fixed_variables['scr_gebaeude_id'] == scr_gebaeude_id].iloc[0]['plz'])
@@ -364,61 +347,3 @@ def CF_factors(scr_gebaeude_id, start_time, end_time):
 
         return Climate_Factor
 
-
-
-
-
-
-''' MYSQL required original functions '''
-# def get_building_inputdata(scr_gebaeude_id):
-#     try:
-#         connection = mysql.connector.connect(host='130.149.80.220',
-#                                              database='kataisgod',
-#                                              user='katahome',
-#                                              password='Sh1nk3nN4k4G0')
-#         # SET BUILDING ID HERE:
-#         variables_df = pd.read_sql_query( """ SELECT 
-                                      
-#                                       scr_gebaeude_id, q25_1, aw_fl, qd1, geb_f_flaeche_n_iwu, 
-                                      
-#                                       d_fl_be, nrf_2, ebf, n_og, geb_f_hoehe_mittel_iwu,  
-                                      
-#                                       u_fen, u_aw, d_u_ges, u_ug, facade_area
-                                      
-#                                       FROM DIBS_input WHERE scr_gebaeude_id = {}""".format(scr_gebaeude_id), connection)
-        
-#         # variables_df = pd.DataFrame(sql_query, columns = ["scr_gebaeude_id", "q25_1", "aw_fl", "qd1", "geb_f_flaeche_n_iwu", "d_fl_be", "nrf_2", "ebf", "n_og", "geb_f_hoehe_mittel_iwu", "u_fen", "u_aw", "d_u_ges", "u_ug", "facade_area"])
-
-
-#     except mysql.connector.Error as error:
-#         print("Failed to select values from table {}".format(error))
-
-#     finally:
-#         if connection.is_connected():
-#             connection.close()
-#             print("MySQL connection is closed")
-#     return variables_df
-
-
-
-# def get_observations(scr_gebaeude_id):
-#     try:
-#         connection = mysql.connector.connect(host='130.149.80.220',
-#                                             database='kataisgod',
-#                                             user='katahome',
-#                                             password='Sh1nk3nN4k4G0')
-#     # SET BUILDING ID HERE:
-#         observations = pd.read_sql_query( """ SELECT building_yearly_Q2 FROM heat_energy_demand WHERE building_id = {}""".format(scr_gebaeude_id), connection)
-#                                                 # building_yearly_Q2_normalized
-#     except mysql.connector.Error as error:
-#         print("Failed to select values from table {}".format(error))
-
-#     finally:
-#         if connection.is_connected():
-#             connection.close()
-#             print("MySQL connection is closed")
-
-#     #scaler_obs = 100000
-#     #obs_scaled = np.array(np.divide(observations, scaler_obs)) 
-
-#     return observations["building_yearly_Q2"].to_numpy()

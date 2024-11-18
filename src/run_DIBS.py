@@ -2,7 +2,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import os
-# os.chdir(os.path.join(os.getcwd(), 'src'))
 import inputs
 import time
 import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
@@ -18,7 +17,6 @@ except:
     import src.inputs as inputs
 
 
-''' For Potsdam, TRY: climate_file, start_time, end_time, output_resolution = None, None, None, None '''
 
 def model_run(scr_gebaeude_id, climate_file, start_time, end_time, output_resolution, training_ratio):
  
@@ -42,7 +40,7 @@ def model_run(scr_gebaeude_id, climate_file, start_time, end_time, output_resolu
         start = datetime.strptime(start_time, '%Y-%m-%d %H:%M:%S')
         end = datetime.strptime(end_time, '%Y-%m-%d %H:%M:%S')
 
-        HeatingEnergy_sum.to_csv(os.path.join(paths.RES_DIR, "DIBS_sim/{}/{}/{}/HeatingEnergy_{}-{}-{}_{}-{}-{}.csv".format(scr_gebaeude_id, output_resolution, training_ratio, start.year, start.month, start.day, end.year, end.month, end.day)), sep=';')
+        HeatingEnergy_sum.to_csv(os.path.join(paths.RES_DIR, f'DIBS_sim/{scr_gebaeude_id}/{output_resolution}/{training_ratio}/HeatingEnergy_{start.year}-{start.month}-{start.day}_{end.year}-{end.month}-{end.day}.csv'), sep=';')
 
 
     else:
@@ -57,7 +55,7 @@ def model_run(scr_gebaeude_id, climate_file, start_time, end_time, output_resolu
 
         start = datetime.strptime(f'{str_time}-12-31', '%Y-%m-%d')
         end = datetime.strptime(f'{fnsh_time}-12-31', '%Y-%m-%d')
-        df.to_csv(os.path.join(paths.RES_DIR, "DIBS_sim/{}/{}/{}/HeatingEnergy_{}-{}-{}_{}-{}-{}.csv".format(scr_gebaeude_id, output_resolution, training_ratio, start.year, start.month, start.day, end.year, end.month, end.day)), sep=';', index=False)
+        df.to_csv(os.path.join(paths.RES_DIR, f'DIBS_sim/{scr_gebaeude_id}/{output_resolution}/{training_ratio}/HeatingEnergy_{start.year}-{start.month}-{start.day}_{end.year}-{end.month}-{end.day}.csv'), sep=';', index=False)
 
     return HeatingEnergy_sum
 

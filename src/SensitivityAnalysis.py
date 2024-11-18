@@ -43,7 +43,6 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
         pass
 
 
-
     sa_start = time.time()
 
     ts_ori = model_run(scr_gebaeude_id, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio)
@@ -100,8 +99,6 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
         end_time1 = time.time()
         df_calc_time = pd.concat([df_calc_time, pd.DataFrame([{'Num_Samples_SA': SA_num_samples, 'Calc_time': end_time1 - start_time1}])], ignore_index=True)
 
-        #df_calc_time = df_calc_time.append({'Num_Samples_SA': SA_num_samples, 'Calc_time': end_time1 - start_time1}, ignore_index=True)
-
         new_folder_name = "SA_convergence_{}_{}_{}_{}_sample_no_{}".format(calib_type, scr_gebaeude_id, output_resolution, training_ratio, SA_num_samples)
         new_folder_path = os.path.join(paths.DATA_DIR, new_folder_name)
         os.makedirs(new_folder_path, exist_ok=True)
@@ -148,7 +145,6 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
                 if output_resolution != None:
                     total_Si.to_excel(os.path.join(paths.DATA_DIR, "SA/{}/{}/TotalSi_{}_obs_train_{}_samples.xlsx".format(scr_gebaeude_id, output_resolution, training_ratio, converged_sample_size)))
 
-
                 break
 
     df_calc_time.to_excel(os.path.join(paths.CTRL_DIR, f'SA_Convergence_all_results_{calib_type}_{scr_gebaeude_id}_{output_resolution}_{training_ratio}.xlsx'), index=False)
@@ -164,19 +160,19 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
 
     return converged_sample_size, sa_converged, sa_conv_time
 
-# Main execution example
-if __name__ == "__main__":
-    RUN_SA_CONVERGENCE = 'Y'  # Set this to 'Y' to run the convergene
-    scr_gebaeude_id = "your_building_id_here"  
-    calib_type = "AMY"  
-    climate_file = "AMY_2010_2022.epw"  
-    start_time_cal = "2010-01-01 01:00:00"
-    end_time_cal = "2015-12-31 23:00:00"
-    output_resolution = "Y"
+# # Main execution example
+# if __name__ == "__main__":
+#     RUN_SA_CONVERGENCE = 'Y'  # Set this to 'Y' to run the convergene
+#     scr_gebaeude_id = "your_building_id_here"  
+#     calib_type = "AMY"  
+#     climate_file = "AMY_2010_2022.epw"  
+#     start_time_cal = "2010-01-01 01:00:00"
+#     end_time_cal = "2015-12-31 23:00:00"
+#     output_resolution = "Y"
 
-    if RUN_SA_CONVERGENCE == 'Y':
-        num_samples_sa = find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution)
-    else:
-        num_samples_sa = 8
+#     if RUN_SA_CONVERGENCE == 'Y':
+#         num_samples_sa = find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution)
+#     else:
+#         num_samples_sa = 8
 
-    print(f"Optimal number of samples for SA: {num_samples_sa}")
+#     print(f"Optimal number of samples for SA: {num_samples_sa}")
