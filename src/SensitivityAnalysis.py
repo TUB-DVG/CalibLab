@@ -2,12 +2,12 @@ import os
 import time
 import pandas as pd
 import numpy as np
-from run_DIBS_sim import model_run
+from run_DIBS import model_run
 from SALib.sample import saltelli
 from SALib.analyze import sobol
 import inputs
-import DIBS_sim_modified.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
-import DIBS_sim_modified.iso_simulator.annualSimulation.annualSimulation as sim
+import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
+import DIBS.iso_simulator.annualSimulation.annualSimulation as sim
 import matplotlib.pyplot as plt
 import multiprocessing
 

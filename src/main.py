@@ -1,11 +1,13 @@
-import time
 import os
-import numpy as np
+os.chdir(os.path.join(os.getcwd(), 'src'))
 
-import multiprocessing as mp
-from functools import partial
+import time
+import pandas as pd
+import numpy as np
 import pymc3 as pm
 import arviz as az
+import multiprocessing as mp
+from functools import partial
 from sklearn.gaussian_process.kernels import RBF, WhiteKernel, RationalQuadratic
 from sklearn.metrics import r2_score
 try:
@@ -25,7 +27,7 @@ from run_GP_train import train_gp
 from BayesianCalibration import run_calibration
 from multisimulationFunction import run_simulation
 from GaussianProcesses import perform_gp_convergence
-import pandas as pd
+
 
 
 def calculate_cvrmse_r2(measured, simulated):
