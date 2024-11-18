@@ -5,9 +5,9 @@ import os
 # os.chdir(os.path.join(os.getcwd(), 'src'))
 import inputs
 import time
-import DIBS_sim_modified.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
-import DIBS_sim_modified.iso_simulator.annualSimulation.annualSimulation as sim
-from DIBS_sim_modified.iso_simulator.annualSimulation.annualSimulation import iterate_namedlist
+import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
+import DIBS.iso_simulator.annualSimulation.annualSimulation as sim
+from DIBS.iso_simulator.annualSimulation.annualSimulation import iterate_namedlist
 try:
     import paths 
 except:

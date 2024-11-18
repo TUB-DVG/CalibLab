@@ -4,8 +4,8 @@ import time
 import os
 import pickle
 from datetime import datetime
-import DIBS_sim_modified.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
-import DIBS_sim_modified.iso_simulator.annualSimulation.annualSimulation as sim
+import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
+import DIBS.iso_simulator.annualSimulation.annualSimulation as sim
 try:
     import inputs 
 except:

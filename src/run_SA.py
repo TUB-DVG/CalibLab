@@ -6,9 +6,9 @@ import numpy as np
 from SALib.sample import saltelli
 from SALib.analyze import sobol
 import inputs
-import DIBS_sim_modified.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
-import DIBS_sim_modified.iso_simulator.annualSimulation.annualSimulation as sim
-from run_DIBS_sim import model_run
+import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
+import DIBS.iso_simulator.annualSimulation.annualSimulation as sim
+from run_DIBS import model_run
 try:
     import paths 
 except:
