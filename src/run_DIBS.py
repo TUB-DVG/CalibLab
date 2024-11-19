@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 import inputs
-import time
 import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
 import DIBS.iso_simulator.annualSimulation.annualSimulation as sim
 from DIBS.iso_simulator.annualSimulation.annualSimulation import iterate_namedlist
@@ -18,7 +17,7 @@ except:
 
 
 
-def model_run(scr_gebaeude_id, climate_file, start_time, end_time, output_resolution, training_ratio):
+def run_model(scr_gebaeude_id, climate_file, start_time, end_time, output_resolution, training_ratio):
  
     dir_path = os.path.join(paths.RES_DIR, "DIBS_sim", str(scr_gebaeude_id), str(output_resolution), str(training_ratio))
 

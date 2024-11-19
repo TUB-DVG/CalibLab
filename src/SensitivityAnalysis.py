@@ -2,7 +2,7 @@ import os
 import time
 import pandas as pd
 import numpy as np
-from run_DIBS import model_run
+from run_DIBS import run_model
 from SALib.sample import saltelli
 from SALib.analyze import sobol
 import inputs
@@ -30,7 +30,7 @@ def simulate(i, X, scr_gebaeude_id, fixed_variables_bd, calib_type, climate_file
     if calib_type == "TRY":
         return i, sim.cal_heating_energy_bd(building_data.iloc[0])
     
-def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio, sampling_lower_bound, sampling_upper_bound):
+def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio, SA_sampling_lowerbound, SA_sampling_upperbound):
 
 
     dir_path = os.path.join(paths.DATA_DIR, "SA", str(scr_gebaeude_id), str(output_resolution))
@@ -45,10 +45,10 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
 
     sa_start = time.time()
 
-    ts_ori = model_run(scr_gebaeude_id, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio)
+    ts_ori = run_model(scr_gebaeude_id, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio)
 
     # Set the range of sample sizes as powers of 2
-    sample_sizes = [2**n for n in range(sampling_lower_bound, sampling_upper_bound)]  # Start n with 5, end with 7
+    sample_sizes = [2**n for n in range(SA_sampling_lowerbound, SA_sampling_upperbound)]  # Start n with 5, end with 7
 
     intervals = inputs.create_intervals(scr_gebaeude_id)
 
@@ -155,24 +155,8 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
 
     else:
         print("The rankings of the top five parameters did not stabilize within the given sample sizes.")
-        converged_sample_size = 2**sampling_upper_bound
-        converged = 0
+        converged_sample_size = 2**SA_sampling_upperbound
+        sa_converged = 0
 
     return converged_sample_size, sa_converged, sa_conv_time
 
-# # Main execution example
-# if __name__ == "__main__":
-#     RUN_SA_CONVERGENCE = 'Y'  # Set this to 'Y' to run the convergene
-#     scr_gebaeude_id = "your_building_id_here"  
-#     calib_type = "AMY"  
-#     climate_file = "AMY_2010_2022.epw"  
-#     start_time_cal = "2010-01-01 01:00:00"
-#     end_time_cal = "2015-12-31 23:00:00"
-#     output_resolution = "Y"
-
-#     if RUN_SA_CONVERGENCE == 'Y':
-#         num_samples_sa = find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution)
-#     else:
-#         num_samples_sa = 8
-
-#     print(f"Optimal number of samples for SA: {num_samples_sa}")

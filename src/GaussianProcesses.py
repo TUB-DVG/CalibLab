@@ -50,14 +50,9 @@ def train_gp_wrapper(args):
 
 
 
-def perform_gp_convergence(scr_gebaeude_id, climate_file, output_resolution, calib_type, min_gp_samples, max_gp_samples, num_bc_param, num_samples_sa, step_gp, rmse_threshold, gp_test_size = 0.2, training_ratio = 0.75):
+def perform_gp_convergence(scr_gebaeude_id, climate_file, output_resolution, calib_type, start_time_cal, end_time_cal, min_gp_samples, max_gp_samples, num_bc_param, num_samples_sa, step_gp, rmse_threshold, gp_test_size = 0.2, training_ratio = 0.75):
     start_time=time.time()
 
-    metered = pd.read_excel(os.path.join(paths.DATA_DIR, f'HeatEnergyDemand_{scr_gebaeude_id}_{output_resolution}.xlsx'), index_col=0)
-    nr_train_data = round(metered.shape[0] * training_ratio / 100)
-    start_time_cal, end_time_cal = metered.index[0].strftime('%Y-%m-%d %H:%M:%S'), metered.index[nr_train_data].strftime('%Y-%m-%d %H:%M:%S')
-
-    
     # Kernels to be tested are listed here
     kernels = [
     (1, 'RationalQuadratic', C(1.0, (1e-3, 1e3)) * RationalQuadratic(length_scale=1.0, alpha=1.0, length_scale_bounds=(1e-5, 1e5), alpha_bounds=(1e-5, 1e5))),

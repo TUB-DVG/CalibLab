@@ -261,19 +261,6 @@ def gp_metamodel(scr_gebaeude_id, num_bc_param, num_samples_gp, output_resolutio
     return gaussian_process, scaler_X, X_train, X_test, y_train, y_test, y_pred, sigma, mse, mae, rmse, r2, mape
 
 
-  
-''' Observed data [BC] '''
-def get_observations(scr_gebaeude_id, climate_file):
-
-    if climate_file == "AMY_2010_2022.epw":
-        observations = pd.read_excel(os.path.join(paths.DATA_DIR, 'building_yearly_Q2.xlsx')) 
-
-    else:
-        observations = pd.read_excel(os.path.join(paths.DATA_DIR, 'building_yearly_Q2_normalized.xlsx')) 
-
-    return observations[scr_gebaeude_id].to_numpy()
-
-
 
 ''' Define: Prior probability distributions [BC]'''
 def get_prior_param_values_old(scr_gebaeude_id, num_bc_param, num_samples_gp, output_resolution):

@@ -18,7 +18,7 @@ try:
 except:
     import src.paths as paths
 
-from run_DIBS import model_run
+from run_DIBS import run_model
 from SensitivityAnalysis import find_converged_sa_sample_size
 from run_SA import run_SA
 from GaussianProcesses import perform_gp_convergence
@@ -43,27 +43,30 @@ def main():
     start_process = time.time()
 
     ''' INPUTS '''
-    scr_gebaeude_id = 30034001          # Building ID
+    scr_gebaeude_id = 30387001          # Building ID
     calib_type = 'AMY'                  # AMY: Actual Meteorological Year, TRY: Test Reference Year (works only for Germany)
-    output_resolution = 'Y'             # Time resolution for the metered data and calibration: Y = Yearly, M = Monthly, W = Weekly, etc, None = for TRY version
+    output_resolution = 'M'             # Time resolution for the metered data and calibration: Y = Yearly, M = Monthly, W = Weekly, etc, None = for TRY version
     climate_file = 'AMY_2010_2022.epw'  # Name of the climate file
+
 
 
     ''' OPTIONAL INPUTS '''
     num_bc_param = 5                    # Number of model parameters to be calibrated
-    RUN_SA_CONVERGENCE = 'Y'            # Preference to run automatized convergence check for Sensitivity Analysis
+    SA_Convergence_Required = 'Y'       # Preference to run automatized convergence check for Sensitivity Analysis
     SA_sampling_lowerbound = 4          # Minimum number of samples (N) for Sensitivity Analysis ((N*(2D+2))). D=Dimensions, number of parameters
     SA_sampling_upperbound = 9          # Maximum number of samples for Sensitivity Analysis (This limit prevents excessively long runtimes if the sensitivity index parameter order does not converge)
-    RUN_GP_CONVERGENCE = 'Y'            # Preference to run automatized convergence check for meta-model creation
+    GP_Convergence_Required = 'Y'       # Preference to run automatized convergence check for meta-model creation
+    min_gp_samples = 30                 # Minimum number of samples for meta-model training
+    max_gp_samples = 400                # Maximum number of samples for meta-model training
+    step_gp = 10                        # Increase in sample size for each new meta-model training
     rmse_threshold = 0.0007             # RMSE criteria for the meta-model
-    gp_test_size = 25/100               # Percentage of samples for GP to be used for the evaluation of the meta-model
+    gp_test_size = 25/100               # Proportion of samples for GP to be used for the evaluation of the meta-model
     training_ratio = 75                 # Percentage of observed data to be used for the calibration
     draws, tune, chains = 100, 200, 4   # Bayesian Calibration parameters
 
-    ''' IMPORTING DATA '''
-    if RUN_SA_CONVERGENCE != 'Y':
-        sa_converged = 0
 
+
+    ''' IMPORT DATA '''
     metered=pd.read_excel(os.path.join(paths.DATA_DIR, 'HeatEnergyDemand_{}_{}.xlsx'.format(scr_gebaeude_id, output_resolution)), index_col=0)
     nr_train_data = round(metered[1:].shape[0]*training_ratio/100)
     start_time_cal, end_time_cal = metered.index[0].strftime('%Y-%m-%d %H:%M:%S'), metered.index[nr_train_data].strftime('%Y-%m-%d %H:%M:%S')
@@ -71,64 +74,82 @@ def main():
 
 
 
-    ''' (1) Process Controll '''
+    ''' (0) Process Controll File'''
     df = pd.DataFrame()
-    df['Name'] = ['Part done', 'Duration time in seconds', 'Other info', 'Other info', 'Other info', 'Other info', 'Other info', 'Other info']
+    df['Name'] = ['Step done', 'Duration time in seconds', 'Other info', 'Other info', 'Other info', 'Other info', 'Other info', 'Other info']
     ctrl_file = os.path.join(paths.CTRL_DIR, f'process_intermittent_check_{scr_gebaeude_id}_{calib_type}_{output_resolution}_{str(training_ratio)}.xlsx')
     df.to_excel(ctrl_file)
 
 
 
-    ''' (2) DIBS Simulation '''
-    from run_DIBS import model_run
-    start_calc = time.time()
-    HeatingEnergy_sum = model_run(scr_gebaeude_id, climate_file, start_time, end_time, output_resolution, training_ratio)     
-    end_calc = time.time()
 
+    ''' (1) DIBS Simulation '''
+    start_calc = time.time()
+
+    HeatingEnergy_sum = run_model(scr_gebaeude_id, 
+                                  climate_file, 
+                                  start_time, 
+                                  end_time, 
+                                  output_resolution, 
+                                  training_ratio)   
+
+    end_calc = time.time()
     if output_resolution == None:
-        df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', '{}'.format(HeatingEnergy_sum.tolist()), '-', '-', '-', '-']
+        HeatingEnergy_sum = HeatingEnergy_sum.tolist()
     else: 
-        df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', '{}'.format(HeatingEnergy_sum['HeatingEnergy'].values.tolist()), '-', '-', '-', '-']
+        HeatingEnergy_sum = HeatingEnergy_sum['HeatingEnergy'].values.tolist()
+    df['DIBS'] = ['DIBS simulation is working', end_calc-start_calc, 'Uncalibrated sim result, kWh: ', f'{HeatingEnergy_sum}', '-', '-', '-', '-']
     df.to_excel(ctrl_file, index=False)
 
 
 
-    ''' (3) Sensitivity Analysis'''
-    if RUN_SA_CONVERGENCE == 'Y':             
-        num_samples_sa, sa_converged, sa_conv_time = find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio,  sampling_lower_bound = SA_sampling_lowerbound, sampling_upper_bound= SA_sampling_upperbound)
-        df['SA'] = ['SA is done', f'Convergence time: {sa_conv_time}', f'Num samples: {num_samples_sa}', '-', '-', '-', '-', '-']
+
+    ''' (2) Sensitivity Analysis'''
+    if SA_Convergence_Required == 'Y':             
+        num_samples_sa, sa_converged, calc_time_SA = find_converged_sa_sample_size(scr_gebaeude_id, 
+                                                                                   calib_type, 
+                                                                                   climate_file, 
+                                                                                   start_time_cal, 
+                                                                                   end_time_cal, 
+                                                                                   output_resolution, 
+                                                                                   training_ratio,  
+                                                                                   SA_sampling_lowerbound, 
+                                                                                   SA_sampling_upperbound)
 
         ''' No automatized convergence '''
     else:
+        sa_converged = 0
         num_samples_sa = 32     # Default number of samples for determination of most sensible parameters.
         total_SI, calc_time_SA = run_SA(scr_gebaeude_id, num_samples_sa, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio) 
-        df['SA - {} train'.format(training_ratio)] = ['SA is done', calc_time_SA, f'Num samples: {num_samples_sa}', '-', '-', '-', '-', '-']
+        
+    df['SA'] = ['SA is done', f'Convergence time: {calc_time_SA}', f'Num samples: {num_samples_sa}', f'SA Converged: {sa_converged}', f'SA_Convergence_Required: {SA_Convergence_Required}', '-', '-', '-']
     df.to_excel(ctrl_file, index=False)
+
 
 
 
     ''' (4) Gaussian Regression -- Meta-model creation'''
-    if RUN_GP_CONVERGENCE == 'Y':
-        best_result, best_kernel_path, best_samples_df_path, conv_time = perform_gp_convergence(
-            scr_gebaeude_id=scr_gebaeude_id,
-            climate_file=climate_file,
-            output_resolution=output_resolution,
-            calib_type=calib_type,
-            min_gp_samples= 30,
-            max_gp_samples= 400,
-            num_bc_param=num_bc_param,
-            num_samples_sa=num_samples_sa,
-            step_gp=10,
-            rmse_threshold=rmse_threshold,
-            gp_test_size=gp_test_size,
-            training_ratio = training_ratio)
-        
+    if GP_Convergence_Required == 'Y':
+        best_result, best_kernel_path, best_samples_df_path, conv_time = perform_gp_convergence(scr_gebaeude_id, 
+                                                                                                climate_file, 
+                                                                                                output_resolution, 
+                                                                                                calib_type, 
+                                                                                                start_time_cal, 
+                                                                                                end_time_cal,
+                                                                                                min_gp_samples,
+                                                                                                max_gp_samples, 
+                                                                                                num_bc_param, 
+                                                                                                num_samples_sa, 
+                                                                                                step_gp, 
+                                                                                                rmse_threshold, 
+                                                                                                gp_test_size, 
+                                                                                                training_ratio)
         best_rmse_norm = best_result['RMSE_NORM']
         kernel_index = best_result['Kernel_Index']
         kernel = best_result['Kernel']
         num_samples_gp = best_result['Num_Samples_GP']
 
-        df['GP samples'] = ['GP samples is done', conv_time, f'num_samples_gp: {num_samples_gp}', f'num_bc_param: {num_bc_param}', f'num_samples_sa: {num_samples_sa}', f'climate_file: {climate_file}', f'output_resolution: {output_resolution}', '-']
+        df['GP convergence'] = ['GP is done', conv_time, f'num_samples_gp: {num_samples_gp}', f'num_bc_param: {num_bc_param}', f'num_samples_sa: {num_samples_sa}', f'climate_file: {climate_file}', f'output_resolution: {output_resolution}', '-']
         df.to_excel(ctrl_file, index=False)
 
         ''' No automatized convergence '''
@@ -136,27 +157,39 @@ def main():
         num_samples_gp = 80     # Default number of samples for the training & testing of the meta-model.
         kernel, kernel_index = 1 * RationalQuadratic(), 1   # Default Kernel
 
+        # Sampling for the Gaussian Processes
         start = time.time()
         samples_df, calc_time = sample_gp(scr_gebaeude_id, num_bc_param, num_samples_sa, num_samples_gp, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio)
         finish = time.time()
-
-        df['GP samples'] = ['GP samples is done', finish-start, f'num_samples_gp: {num_samples_gp}', f'num_bc_param: {num_bc_param}', f'num_samples_sa: {num_samples_sa}', f'climate_file: {climate_file}', f'start_time, end_time: {start_time}, {end_time}', f'output_resolution: {output_resolution}']
+        df['GP sample'] = ['GP samples is done', finish-start, f'num_samples_gp: {num_samples_gp}', f'num_bc_param: {num_bc_param}', f'num_samples_sa: {num_samples_sa}', f'climate_file: {climate_file}', f'start_time, end_time: {start_time}, {end_time}', f'output_resolution: {output_resolution}']
         df.to_excel(ctrl_file, index=False)
         
+        # Training the meta-model
         start = time.time()
         kernel_trained, mse, mae, rmse, r2, sigma, y_test_mean, mape = train_gp(scr_gebaeude_id, num_bc_param, kernel, kernel_index, num_samples_gp, gp_test_size, output_resolution, training_ratio) 
         finish = time.time()
-
-        df[f'GP train, training_ratio: {training_ratio}, num_bc_param: {num_bc_param}'] = ['GP train is done', finish-start, f'bc_param: {num_bc_param}, training_ratio: {training_ratio}, samples: {num_samples_gp}', f'Kernel: {kernel_trained}', f'Kernel index: {kernel_index}, GP test size: {gp_test_size}', f'MAPE: {mape} / MSE: {mse} / RMSE: {rmse} / MAE: {mae}', f'r2-score: {r2}', f'std of prediction: {sigma}']
+        df['GP train'] = ['GP train is done', finish-start, f'bc_param: {num_bc_param}, training_ratio: {training_ratio}, samples: {num_samples_gp}', f'Kernel: {kernel_trained}', f'Kernel index: {kernel_index}, GP test size: {gp_test_size}', f'MAPE: {mape} / MSE: {mse} / RMSE: {rmse} / MAE: {mae}', f'r2-score: {r2}', f'std of prediction: {sigma}']
         df.to_excel(ctrl_file, index=False)
         
+
 
 
     ''' (5) Bayesian Calibration '''
     threshold = 1.01    # Gelman-Rubin convergence diagnostic criteria
 
     start = time.time()
-    trace, converged, draws, tune, chains = run_calibration(scr_gebaeude_id, num_bc_param, draws, tune, chains, num_samples_gp, kernel_index, output_resolution, training_ratio, start_time_cal, end_time_cal, threshold)
+    trace, converged, draws, tune, chains = run_calibration(scr_gebaeude_id, 
+                                                            num_bc_param, 
+                                                            draws, 
+                                                            tune, 
+                                                            chains, 
+                                                            num_samples_gp, 
+                                                            kernel_index, 
+                                                            output_resolution, 
+                                                            training_ratio, 
+                                                            start_time_cal, 
+                                                            end_time_cal, 
+                                                            threshold)
 
     if converged:
         print(f'Bayesian calibration converged at {tune} tunes and {draws} draws')
@@ -168,8 +201,10 @@ def main():
     df.to_excel(ctrl_file, index=False)
 
 
+
     finish_process = time.time()
     print(f'The framework required {(finish_process-start_process)/3600} hours to complete.')
+
 
 
 
@@ -268,8 +303,8 @@ def main():
         f.write(f'training_ratio: {training_ratio}\n')
         f.write(f'SA_sampling_lowerbound: {SA_sampling_lowerbound}\n')
         f.write(f'SA_sampling_upperbound: {SA_sampling_upperbound}\n')
-        f.write(f'RUN_GP_CONVERGENCE: {RUN_GP_CONVERGENCE}\n')
-        f.write(f'RUN_SA_CONVERGENCE: {RUN_SA_CONVERGENCE}\n')
+        f.write(f'GP_Convergence_Required: {GP_Convergence_Required}\n')
+        f.write(f'SA_Convergence_Required: {SA_Convergence_Required}\n')
         f.write(f'rmseNorm_threshold for GP Convergence: {rmse_threshold}\n')
         f.write(f'gp_test_size: {gp_test_size}\n')
         f.write(f'calib_type: {calib_type}\n')

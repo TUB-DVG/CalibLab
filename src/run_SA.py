@@ -6,7 +6,7 @@ from SALib.sample import saltelli
 from SALib.analyze import sobol
 import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
 import DIBS.iso_simulator.annualSimulation.annualSimulation as sim
-from run_DIBS import model_run
+from run_DIBS import run_model
 import inputs
 try:
     import paths 
@@ -89,7 +89,7 @@ def run_SA(scr_gebaeude_id, num_samples_sa, climate_file, start_time_cal, end_ti
     # AMY version: Sim results using original inputs. This will be the base. The SA is calculated relativaly to this timeseries.
     else:
         print('Generated {} parameter combinations for {} parameters.'.format(param_samples.shape[0], param_samples.shape[1]))
-        ts_ori = model_run(scr_gebaeude_id, climate_file, start_time_cal, end_time_cal, output_resolution)  
+        ts_ori = run_model(scr_gebaeude_id, climate_file, start_time_cal, end_time_cal, output_resolution)  
         Y = np.zeros([param_samples.shape[0]])
         for i, X in enumerate(param_samples):
             be_data_original = inputs.setup_be_data_original_SA(scr_gebaeude_id, fixed_variables_bd, X)
