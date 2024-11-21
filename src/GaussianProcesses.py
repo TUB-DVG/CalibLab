@@ -5,6 +5,8 @@ import pickle
 import multiprocessing
 from multiprocessing import Pool
 from sklearn.gaussian_process.kernels import RationalQuadratic, RBF, ExpSineSquared, ConstantKernel as C
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from run_GP_samples import sample_gp
 from run_GP_train import train_gp
 try:
@@ -125,7 +127,8 @@ def perform_gp_convergence(scr_gebaeude_id, climate_file, output_resolution, cal
         f.write('Best GP Configuration:\n')
         f.write(f'  Kernel: {best_kernel}\n')
         f.write(f'  Number of Samples: {best_num_samples}\n')
-        f.write(f'  R²: {best_result['R2']:.4f}\n\n')
+        #f.write(f'  R²: {best_result['R2']:.4f}\n\n')
+        f.write(f'  R²: {best_result["R2"]:.4f}\n\n')
         f.write(f'  RMSE_NORM: {best_rmse_norm:.4f}\n\n')
         if threshold_found:
             f.write(f'Normalised RMSE threshold of {rmse_threshold} and R² > 0.98 reached. Search stopped early.\n')
@@ -137,6 +140,174 @@ def perform_gp_convergence(scr_gebaeude_id, climate_file, output_resolution, cal
 
     end_time = time.time()
     
+    ''' New code Start'''
+       # Create convergence plot
+    filtered_df = results_df[results_df['Kernel_Index'] == best_kernel_index]
+    filtered_df = filtered_df[filtered_df['Num_Samples_GP'] <= best_num_samples]
+    filtered_df['Total_Time'] = filtered_df['Sampling_Time'] + filtered_df['Training_Time']
+    filtered_df = filtered_df.sort_values(by='Num_Samples_GP', ascending=True)
+
+    # Plot configuration
+    COLORS = {
+        'rmse': '#E63946', 'r2': '#1D3557', 'text': '#2F2F2F',
+        'axis': '#666666', 'background': '#FFFFFF'
+    }
+
+    # Create figure with secondary y-axis
+    fig = make_subplots(
+        rows=2, cols=1,
+        row_heights=[0.85, 0.15],
+        specs=[[{"secondary_y": True}], [{"secondary_y": False}]],
+        vertical_spacing=0.15
+    )
+
+    # Add RMSE trace
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_df['Num_Samples_GP'],
+            y=filtered_df['RMSE_NORM']*100,
+            name="Normalisierte RMSE",
+            mode='lines+markers',
+            line=dict(width=2, color=COLORS['rmse']),
+            marker=dict(color=COLORS['rmse'], symbol='diamond', size=8, line=dict(width=1, color='white')),
+            hovertemplate="<b>Normalized RMSE:</b> %{y:.3f}%<br>Samples: %{x}<extra></extra>"
+        ),
+        row=1, col=1,
+        secondary_y=False
+    )
+
+    # Add R² trace
+    fig.add_trace(
+        go.Scatter(
+            x=filtered_df['Num_Samples_GP'],
+            y=filtered_df['R2'],
+            name="R²",
+            mode='lines+markers',
+            line=dict(width=2, color=COLORS['r2']),
+            marker=dict(color=COLORS['r2'], symbol='circle', size=8, line=dict(width=1, color='white')),
+            hovertemplate="<b>R² Score:</b> %{y:.4f}<br>Samples: %{x}<extra></extra>"
+        ),
+        row=1, col=1,
+        secondary_y=True
+    )
+
+    # Add computation time heatmap
+    comp_time = filtered_df['Total_Time'].values.reshape(1, -1)
+    fig.add_trace(
+        go.Heatmap(
+            z=comp_time,
+            x=filtered_df['Num_Samples_GP'],
+            y=[''],
+            colorscale=[
+                [0, '#184E77'], [0.25, '#1E6091'],
+                [0.5, '#1A759F'], [0.75, '#168AAD'],
+                [1, '#34A0A4']
+            ],
+            colorbar=dict(
+                title=dict(text='Berechnungszeit<br>          (s)', font=dict(size=15, color=COLORS['text'])),
+                thickness=15, len=0.3, xanchor='left', x=1.05, y=0.15,
+                yanchor='bottom', tickfont=dict(size=15),
+                orientation='v', bgcolor='rgba(255,255,255,0.9)',
+                bordercolor=COLORS['axis'], borderwidth=1
+            ),
+            showscale=True,
+            hovertemplate="<b>Computation Time:</b> %{z:.1f}s<br>Samples: %{x}<extra></extra>"
+        ),
+        row=2, col=1
+    )
+    
+    fig.add_annotation(
+    x=0.89,  # Position from 0 to 1 in x
+    y=0.75,  # Position from 0 to 1 in y
+    xref='paper',
+    yref='paper',
+    text=f'Konvergenz bei {best_num_samples} Proben<br>' +
+         f'Normalisierte RMSE: {best_rmse_norm * 100:.3f}%<br>' +
+         f'R²-Wert: {best_result["R2"]:.4f}',
+    showarrow=False,
+    font=dict(size=15),
+    bgcolor='white',
+    bordercolor='black',
+    borderwidth=1,
+    borderpad=10,
+    align='left'
+    )
+
+    # Update layout
+    x_min = filtered_df['Num_Samples_GP'].min()
+    x_max = filtered_df['Num_Samples_GP'].max()
+    tick_vals = list(range(int(x_min), int(x_max)+1, 10))
+
+    fig.update_layout(
+        template='plotly_white',
+        plot_bgcolor=COLORS['background'],
+        paper_bgcolor=COLORS['background'],
+        title=dict(
+            text='<b>Konvergenzanalyse Gaussian Process Regressors',
+            x=0.5, y=0.95, xanchor='center', yanchor='top',
+            font=dict(family='Arial', size=20, color=COLORS['text'])
+        ),
+        showlegend=True,
+        legend=dict(
+            orientation="h", yanchor="bottom", y=1.05,
+            xanchor="center", x=0.5, font=dict(size=20),
+            bordercolor=COLORS['axis'], borderwidth=1,
+            bgcolor='rgba(255,255,255,0.9)'
+        ),
+        margin=dict(l=80, r=150, t=150, b=40),
+        width=1200, height=800,
+        hovermode='x unified'
+    )
+
+    # Update axes
+    for row in [1, 2]:
+        fig.update_xaxes(
+            range=[x_min-1, x_max+1], tickmode='array', tickvals=tick_vals,
+            showticklabels=True, showgrid=False, zeroline=False,
+            showline=True, linewidth=1, linecolor=COLORS['axis'],
+            ticks="outside", tickwidth=1, tickcolor=COLORS['axis'],
+            tickfont=dict(size=20), row=row, col=1
+        )
+
+    fig.update_xaxes(
+        title=dict(
+            text="Anzahl der Versuche Training",
+            font=dict(size=20, color=COLORS['text']),
+            standoff=15
+        ),
+        row=2, col=1
+    )
+
+    fig.update_yaxes(
+        title=dict(text="Normalisierte RMSE (%)", font=dict(size=20, color=COLORS['rmse'])),
+        showgrid=False, zeroline=False, showline=True,
+        linewidth=1, linecolor=COLORS['rmse'],
+        ticks="outside", tickwidth=1, tickcolor=COLORS['rmse'],
+        tickfont=dict(size=20, color=COLORS['rmse']),
+        row=1, col=1, secondary_y=False
+    )
+
+    fig.update_yaxes(
+        title=dict(text="R²", font=dict(size=20, color=COLORS['r2'])),
+        showgrid=False, zeroline=False, showline=True,
+        linewidth=1, linecolor=COLORS['r2'],
+        ticks="outside", tickwidth=1, tickcolor=COLORS['r2'],
+        tickfont=dict(size=20, color=COLORS['r2']),
+        row=1, col=1, secondary_y=True
+    )
+
+    fig.update_yaxes(
+        showticklabels=False,
+        showline=False,
+        row=2, col=1
+    )
+
+    # Save and show plot
+    plot_path = os.path.join(paths.CTRL_DIR, 'GP', 
+                            f'convergence_plot_{scr_gebaeude_id}_{output_resolution}_{training_ratio}.html')
+    fig.write_html(plot_path)
+    fig.show() 
+    ''' New Code End'''
     return best_result, best_kernel_path, best_samples_df_path, end_time-start_time
 
 if __name__ == '__main__':

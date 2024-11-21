@@ -278,15 +278,15 @@ def main():
             f.write('Summary Statistics for Evaluation Metrics:\n\n')
             f.write(summary_stats.to_string())
             f.write('\n\nBest Performing Simulations:\n')
-            f.write(f'Lowest CV(RMSE): Simulation {best_cvrmse['Simulation']}, CV(RMSE) = {best_cvrmse['CV(RMSE)']:.2f}\n')
-            f.write(f'Highest R2: Simulation {best_r2['Simulation']}, R2 = {best_r2['R2']:.4f}\n')
+            f.write(f'Lowest CV(RMSE): Simulation {best_cvrmse["Simulation"]}, CV(RMSE) = {best_cvrmse["CV(RMSE)"]:.2f}\n')
+            f.write(f'Highest R2: Simulation {best_r2["Simulation"]}, R2 = {best_r2["R2"]:.4f}\n')
         
         df['Parallel Simulations'] = [
             'Simulations done', 
             end_parallel - start_parallel,
             f'Parameter combinations: {parameter_combination}',
-            f'Best CV(RMSE): {best_cvrmse['CV(RMSE)']:.2f}',
-            f'Best R2: {best_r2['R2']:.4f}',
+            f'Best CV(RMSE): {best_cvrmse["CV(RMSE)"]:.2f}',
+            f'Best R2: {best_r2["R2"]:.4f}',
             '-', '-', '-']
         df.to_excel(ctrl_file, index=False)
 
