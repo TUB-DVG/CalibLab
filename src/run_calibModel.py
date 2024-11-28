@@ -7,7 +7,7 @@ import time
 import os
 import plotly.graph_objects as go
 from multisimulationFunction import run_simulation
-
+import json
 
 try:
     import inputs 
@@ -57,6 +57,12 @@ def run_parallel_simulations(scr_gebaeude_id, num_bc_param, draws, tune, chains,
         # Calculate total parameter combinations
         parameter_combination = draws * chains 
         
+        # Create directory structure for results
+        results_base_dir = os.path.join(paths.RES_DIR, 'calibrated_model_simulation')
+        building_results_dir = os.path.join(results_base_dir, f'{scr_gebaeude_id}_{output_resolution}')
+        os.makedirs(building_results_dir, exist_ok=True)
+        
+        
         # Load calibration results
         inference_data = az.from_netcdf(os.path.join(
             paths.RES_DIR,
@@ -98,8 +104,13 @@ def run_parallel_simulations(scr_gebaeude_id, num_bc_param, draws, tune, chains,
         df_params['HeatingEnergyPredicted'] = outputs
         
         # Save simulation results
-        results_filename = (f'CalibratedSimulationResults_{scr_gebaeude_id}_numBC_{num_bc_param}_'
-                          f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
+        # results_filename = (f'CalibratedSimulationResults_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+        #                   f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
+        results_filename = os.path.join(
+            building_results_dir,
+            f'CalibratedSimulationResults_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+            f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx'
+        )
         df_params.to_excel(results_filename, index=False)
         
         # Calculate metrics
@@ -122,8 +133,13 @@ def run_parallel_simulations(scr_gebaeude_id, num_bc_param, draws, tune, chains,
         
         # Create and save evaluation metrics
         results_df = pd.DataFrame(results)
-        metrics_filename = (f'EvaluationMetrics_{scr_gebaeude_id}_numBC_{num_bc_param}_'
-                          f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
+        # metrics_filename = (f'EvaluationMetrics_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+        #                   f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
+        metrics_filename = os.path.join(
+            building_results_dir,
+            f'EvaluationMetrics_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+            f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx'
+        )
         results_df.to_excel(metrics_filename, index=False)
         
         # Calculate and save summary statistics
@@ -131,8 +147,14 @@ def run_parallel_simulations(scr_gebaeude_id, num_bc_param, draws, tune, chains,
         best_cvrmse = results_df.loc[results_df['CV(RMSE)'].idxmin()]
         best_r2 = results_df.loc[results_df['R2'].idxmax()]
         
-        summary_filename = (f'SummaryStatistics_{scr_gebaeude_id}_numBC_{num_bc_param}_'
-                          f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.txt')
+        # summary_filename = (f'SummaryStatistics_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+        #                   f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.txt')
+                # Save summary statistics with new path
+        summary_filename = os.path.join(
+            building_results_dir,
+            f'SummaryStatistics_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+            f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.txt'
+        )
         with open(summary_filename, 'w') as f:
             f.write('Summary Statistics for Evaluation Metrics:\n\n')
             f.write(summary_stats.to_string())
@@ -158,7 +180,7 @@ def run_parallel_simulations(scr_gebaeude_id, num_bc_param, draws, tune, chains,
     except Exception as e:
         print(f"Error in parallel simulation: {str(e)}")
         raise
-def create_violin_plot(scr_gebaeude_id, num_bc_param, samples, output_resolution, training_ratio, draws, tune, start_time, end_time, calib_type="TRY"):
+def create_violin_plot(scr_gebaeude_id, num_bc_param, output_resolution, training_ratio, draws, tune, start_time, end_time, calib_type="TRY"):
     """
     Create yearly violin plot using the correct file naming convention
     
@@ -179,8 +201,15 @@ def create_violin_plot(scr_gebaeude_id, num_bc_param, samples, output_resolution
     """
     # Construct results filename
     parameter_combination = draws*tune
-    results_file_name = (f'CalibratedSimulationResults_{scr_gebaeude_id}_numBC_{num_bc_param}_samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
     
+    results_base_dir = os.path.join(paths.RES_DIR, 'calibrated_model_simulation')
+    building_results_dir = os.path.join(results_base_dir, f'{scr_gebaeude_id}_{output_resolution}')
+    
+    # Construct results filename
+    results_file_name = (f'CalibratedSimulationResults_{scr_gebaeude_id}_numBC_{num_bc_param}_'
+                        f'samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
+    #results_file_name = (f'CalibratedSimulationResults_{scr_gebaeude_id}_numBC_{num_bc_param}_samples_{parameter_combination}_training_{training_ratio}_{output_resolution}.xlsx')
+   
     print(f"Looking for results file: {results_file_name}")
     
     # Load data
@@ -191,10 +220,11 @@ def create_violin_plot(scr_gebaeude_id, num_bc_param, samples, output_resolution
     # Get start and end times from metered data
     start_time = metered.index[0].strftime('%Y-%m-%d %H:%M:%S')
     end_time = metered.index[-1].strftime('%Y-%m-%d %H:%M:%S')
-    
-    file_path = os.path.join(os.path.dirname(os.getcwd()), 
-                            f'results/report/{scr_gebaeude_id}_{output_resolution}')
-    posterior_sim = pd.read_excel(os.path.join(file_path, results_file_name))
+    file_path = os.path.join(building_results_dir, results_file_name)
+    # file_path = os.path.join(os.path.dirname(os.getcwd()), 
+    #                         f'results/report/{scr_gebaeude_id}_{output_resolution}')
+    posterior_sim = pd.read_excel(file_path)
+    #posterior_sim = pd.read_excel(os.path.join(file_path, results_file_name))
 
     # Extract years from metered data
     start_year = metered.index[0].year
@@ -207,8 +237,8 @@ def create_violin_plot(scr_gebaeude_id, num_bc_param, samples, output_resolution
     start = pd.to_datetime(start_time)
     end = pd.to_datetime(end_time)
     DIBS_output = pd.read_csv(os.path.join(paths.RES_DIR, 
-                                          f"DIBS_sim/{scr_gebaeude_id}/{output_resolution}/HeatingEnergy_"
-                                          f"{start.year}-{start.month}-{start.day}_{end.year}-{end.month}-{end.day}.csv"), 
+                                          f"DIBS_sim/{scr_gebaeude_id}/{output_resolution}/{training_ratio}/HeatingEnergy_"
+                                          f"{start.year}-{end.month}-{end.day}_{end.year}-{end.month}-{end.day}.csv"), 
                              sep=';', index_col=0)
     DIBS_output.index = pd.to_datetime(DIBS_output.index) + pd.DateOffset(hours=23)
 
@@ -313,7 +343,7 @@ def create_violin_plot(scr_gebaeude_id, num_bc_param, samples, output_resolution
 # Example usage:
 if __name__ == "__main__":
     df_params, results_df = run_parallel_simulations(
-        scr_gebaeude_id="your_building_id",
+        scr_gebaeude_id=300387001,
         num_bc_param=5,
         draws=1000,
         tune=2000,
@@ -326,12 +356,6 @@ if __name__ == "__main__":
         ctrl_file="path_to_control_file"
     )
     
-    violin_fig = create_violin_plot(
-        scr_gebaeude_id=30387001,
-        num_bc_param=5,
-        samples=1600,
-        output_resolution='Y',
-        training_ratio=60,
-        calib_type="AMY"
-    )
+    violin_fig = create_violin_plot(scr_gebaeude_id=300387001 , num_bc_param = 5, output_resolution = 'Y', 
+                                training_ratio = 0.8, draws= 1000, tune=2000, start_time = "2020-01-01", end_time = "2021-12-31", calib_type= 'TRY') 
     violin_fig.show()
