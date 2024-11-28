@@ -31,7 +31,6 @@ from multisimulationFunction import run_simulation
 
 def calculate_cvrmse_r2(measured, simulated):
     '''Calculate CV(RMSE) and R2 for a single simulation run.'''
-    # n = len(measured)
     rmse = np.sqrt(np.mean((simulated - measured)**2))
     cvrmse = (rmse / np.mean(measured)) * 100
     r2 = r2_score(measured, simulated)

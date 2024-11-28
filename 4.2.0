@@ -1,5 +1,0 @@
-Channels:
- - defaults
- - conda-forge
-Platform: win-64
-Collecting package metadata (repodata.json): ...working... 
