@@ -23,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.cpython-39.pyc
 
 # Installer logs
 pip-log.txt
