@@ -46,11 +46,10 @@ def main():
     calib_type = 'AMY'                  # AMY: Actual Meteorological Year, TRY: Test Reference Year (works only for Germany)
     output_resolution = 'M'             # Time resolution for the metered data and calibration: Y = Yearly, M = Monthly, W = Weekly, etc, None = for TRY version
     climate_file = 'AMY_2010_2022.epw'  # Name of the climate file
-
+    num_bc_param = 5                    # Number of model parameters to be calibrated
 
 
     ''' OPTIONAL INPUTS '''
-    num_bc_param = 5                    # Number of model parameters to be calibrated
     SA_Convergence_Required = 'Y'       # Preference to run automatized convergence check for Sensitivity Analysis
     SA_sampling_lowerbound = 4          # Minimum number of samples (N) for Sensitivity Analysis ((N*(2D+2))). D=Dimensions, number of parameters
     SA_sampling_upperbound = 9          # Maximum number of samples for Sensitivity Analysis (This limit prevents excessively long runtimes if the sensitivity index parameter order does not converge)
