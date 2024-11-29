@@ -66,7 +66,7 @@ Fülep, Katalin; Chen, Siling; Brandt, Stefan; Streblow, Rita (2024): Advancing 
 The CalibLab has been developed in context of the [BaU-SaN project](https://www.zukunftbau.de/projekte/forschungsfoerderung/1008187-2137zukunftbau
 ) funded by Forschungsinitiative Zukunft Bau des Bundesinstitutes für Bau-, Stadt- und Raumforschung (reference number SWD-10.08.18.7-21.37). ZUKUNFT BAU [www.zukunftbau.de](https://www.zukunftbau.de/)
 
+<img src="ZukunftBau.jpg" alt="ZukunftBau" width="200" height="100">
 
-!(ZukunftBau.jpg)
 
 
