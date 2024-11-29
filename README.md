@@ -1,11 +1,14 @@
-# Sample GitLab Project
+# CalibLab
 
-This sample project shows how a project in GitLab looks for demonstration purposes. It contains issues, merge requests and Markdown files in many branches,
-named and filled with lorem ipsum.
+### README Section: Aim of the Repository
 
-You can look around to get an idea how to structure your project and, when done, you can safely delete this project.
+This repository provides a comprehensive framework for building energy model calibration with applied uncertainty analysis. The framework leverages Bayesian methods, grounded in Bayes' theorem, to iteratively update prior beliefs about parameter values using observed data. By incorporating this probabilistic approach, users can effectively quantify and manage uncertainty in energy modeling.
 
-[Learn more about creating GitLab projects.](https://docs.gitlab.com/ee/gitlab-basics/create-project.html)
+The framework is seamlessly integrated with the **DIBS simulation tool**, ensuring a streamlined implementation. Additionally, it is designed with modularity in mind, allowing users to exchange or modify individual steps to suit specific requirements or preferences.
+
+Our aim is to make Bayesian calibration accessible and straightforward for  energy modelers and researchers. While the primary focus is on building energy models, the framework is versatile and can be extended to other systems requiring robust uncertainty management. 
+
+As an open-source initiative, we welcome contributions, feedback, and innovative applications of this repository. We look forward to seeing how it evolves and supports advancements in energy modeling and beyond.
 
 # Getting Started
 
@@ -54,7 +57,8 @@ Bayesian Inference:
 - [Arviz](https://python.arviz.org/en/stable/)
 - [Theano](https://pypi.org/project/Theano/)
 
-
+# Usage
+The repository includes two example building models along with their results, providing users with a practical starting point for utilizing the framework. Additionally, a Jupyter Notebook script is included to guide users through the framework step-by-step. The notebook visualizes each stage of the process and offers detailed explanations to enhance understanding and ease of application.
 
 # Publications
 
