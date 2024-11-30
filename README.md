@@ -1,7 +1,5 @@
 # CalibLab
 
-### Aim of the Repository
-
 This repository provides a comprehensive framework for building energy model calibration with applied uncertainty analysis. The framework leverages Bayesian methods, grounded in Bayes' theorem, to iteratively update prior beliefs about parameter values using observed data. By incorporating this probabilistic approach, users can effectively quantify and manage uncertainty in energy modeling.
 
 The framework is seamlessly integrated with the **DIBS simulation tool**, ensuring a streamlined implementation. Additionally, it is designed with modularity in mind, allowing users to exchange or modify individual steps to suit specific requirements or preferences.
