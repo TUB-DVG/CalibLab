@@ -61,13 +61,13 @@ The repository includes two example building models along with their results, pr
 # References
 Bischof, J., Knoll, S., Duffy, A., 2022. Development Of A Python-Based Simplified Hourly Building Model For Non-Domestic Building Stock Operational Energy Simulations. Presented at the BauSim Conference 2022. https://doi.org/10.26868/29761662.2022.5
 
-The original underlying building energy model can be found under [Dynamic-ISO-Simulator (DIBS)](https://github.com/IWUGERMANY/DIBS---Dynamic-ISO-Building-Simulator
+The original underlying building energy model can be found under [Dynamic-ISO-Simulator (DIBS)](https://github.com/IWUGERMANY/DIBS---Dynamic-ISO-Building-Simulator)
 
 # Publications
 
 Fülep, Katalin; Kalathiparambil Kennedy, Mary Lidiya; Brandt, Stefan; Streblow, Rita (2024): An Open-Source Framework: Bayesian Building Energy Model Calibration with Uncertainty Quantification. In the proceedings of the uSIM2024 in Edinburgh, 25. November 2024.
 
-Fülep, Katalin; Chen, Siling; Brandt, Stefan; Streblow, Rita (2024): Advancing Building Energy Modeling: An Open-Source Bayesian Calibration Framework for Non-Residential Buildings. In the proceedings of the SimBuild in Denver, Colorado, 21-23 May 2024. In SimBuild 2024 URL: https://publications.ibpsa.org/conference/paper/?id=simbuild2024_2292
+Fülep, Katalin; Chen, Siling; Brandt, Stefan; Streblow, Rita (2024): Advancing Building Energy Modeling: An Open-Source Bayesian Calibration Framework for Non-Residential Buildings. In the proceedings of the SimBuild in Denver, Colorado, 21-23 May 2024. In SimBuild 2024, [URL](https://publications.ibpsa.org/conference/paper/?id=simbuild2024_2292)
 
 ---
 The CalibLab has been developed in context of the [BaU-SaN project](https://www.zukunftbau.de/projekte/forschungsfoerderung/1008187-2137zukunftbau
