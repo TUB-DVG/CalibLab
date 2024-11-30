@@ -59,9 +59,9 @@ Bayesian Inference:
 The repository includes two example building models along with their results, providing users with a practical starting point for utilizing the framework. Additionally, a Jupyter Notebook script is included to guide users through the framework step-by-step. The notebook visualizes each stage of the process and offers detailed explanations to enhance understanding and ease of application.
 
 # References
-Bischof, J., Knoll, S., Duffy, A., 2022. Development Of A Python-Based Simplified Hourly Building Model For Non-Domestic Building Stock Operational Energy Simulations. Presented at the BauSim Conference 2022. https://doi.org/10.26868/29761662.2022.5
+Bischof, J., Knoll, S., Duffy, A., 2022. Development Of A Python-Based Simplified Hourly Building Model For Non-Domestic Building Stock Operational Energy Simulations. Presented at the BauSim Conference 2022. [DOI](https://doi.org/10.26868/29761662.2022.5)
 
-The original underlying building energy model can be found under [Dynamic-ISO-Simulator (DIBS)](https://github.com/IWUGERMANY/DIBS---Dynamic-ISO-Building-Simulator)
+The original underlying building energy model can be found under [Dynamic-ISO--Building-Simulator (DIBS)](https://github.com/IWUGERMANY/DIBS---Dynamic-ISO-Building-Simulator)
 
 # Publications
 
