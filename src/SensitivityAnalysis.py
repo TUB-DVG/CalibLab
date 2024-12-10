@@ -21,105 +21,8 @@ def cal_accu_dev(ts_ori, ts_var):
     assert len(ts_ori) == len(ts_var)
     return abs(ts_ori - ts_var).sum()
 
-def plot_rankings_from_files(scr_gebaeude_id, calib_type, output_resolution, training_ratio, sample_sizes, converged_sample_size):
-    dir_path = os.path.join(paths.DATA_DIR, "SA", str(scr_gebaeude_id), str(output_resolution))
-    idx = sample_sizes.index(converged_sample_size)
-    # Dictionary to store the ranks for each parameter
-    ranks = {}
-    parameters = []
 
-    for sample_no in sample_sizes[:idx+1]:
-        folder_name = "SA_convergence_{}_{}_{}_{}_sample_no_{}".format(
-            calib_type, scr_gebaeude_id, output_resolution, training_ratio, sample_no)
-        file_path = os.path.join(paths.DATA_DIR, folder_name, f'TotalSi_{scr_gebaeude_id}_{sample_no}.xlsx')
-        
-        df = pd.read_excel(file_path)
-        
-        # If parameters list is empty, populate it from first file
-        if not parameters:
-            parameters = df.iloc[:, 0].tolist()
-        
-        # Sort parameters based on ST values to get rankings (descending order for highest ST = rank 1)
-        df_sorted = df.sort_values(by='ST', ascending=False)
-        ranks[sample_no] = df_sorted.iloc[:, 0].tolist()
 
-    name_mapping = {
-        'q25_1': 'Maximale Belegung',
-        'aw_fl': 'Aussenwandfläche über Gelände',
-        'qd1': 'Flächenverhältnis Fenster/Wand',
-        'facade_area': 'Fläche der Fassade',
-        'geb_f_flaeche_n_iwu': 'Nordfassade',
-        'd_fl_be': 'Dachfläche',
-        'nrf_2': 'Nettoraumfläche',
-        'ebf': 'Energiebezugsfläche',
-        'n_og': 'Anzahl der Geschosse ohne Keller',
-        'geb_f_hoehe_mittel_iwu': 'Höhe',
-        'u_fen': 'U-Wert Fenster',
-        'u_aw': 'U-Wert Aussenwand',
-        'd_u_ges': 'U-Wert Dach',
-        'u_ug': 'U-Wert Bodenplatte',
-        'heat_recovery_efficiency': 'Wärmerückgewinnnung der RLT',
-        'thermal_capacitance': 'Wärmekapazität',
-        'heating_coefficient': 'Heizeffizienz',
-        'glass_solar_transmittance': 'Tranmissionsfaktor Glas',
-        'qd8': 'Lichttransmissionsfaktor',
-        'p_j_lx': 'Beleuchtungsdichte',
-        'k_L': 'Faktor der Lichtbereitstellung'
-    }
-
-    colorPalette = [
-        "#1d1d1d", "#ebce2b", "#702c8c", "#db6917", "#96cde6", "#ba1c30", "#c0bd7f", "#7f7e80", "#5fa641",
-        "#d485b2", "#4277b6", "#df8461", "#463397", "#e1a11a", "#91218c", "#e8e948", "#7e1510", "#92ae31", 
-        "#6f340d", "#d32b1e", "#2b3514"
-    ]
-
-    # Setup plot
-    plt.rcParams['font.family'] = 'sans-serif'
-    plt.rcParams['font.sans-serif'] = ['Arial']
-    fig, ax = plt.subplots(figsize=(24, 12))
-
-    # Calculate multiplied sample numbers for x-axis
-    multiplied_sample_numbers = [x * 44 for x in sample_sizes[:idx+1]]
-
-    # Plot for each parameter
-    for param_idx, parameter in enumerate(parameters):
-        y = [ranks[sample_no].index(parameter) + 1 for sample_no in sample_sizes[:idx+1]]
-        
-        ax.plot(multiplied_sample_numbers, y, 
-               marker='o', color=colorPalette[param_idx], 
-               linewidth=1.5, markersize=8)
-        
-        ax.text(multiplied_sample_numbers[-1] + 20, y[-1], 
-               f' {name_mapping[parameter]}', 
-               va='center', ha='left', 
-               color=colorPalette[param_idx], 
-               fontsize=20, fontfamily='Arial')
-
-    ax.set_title(f'Parameterreihenfolge der Gesamtsensitivitätsindizes nach Sobol', 
-                pad=20, fontsize=25, fontweight='bold', fontfamily='Arial')
-    ax.set_xlabel('Anzahl der Versuche', 
-                 fontsize=25, fontweight='medium', fontfamily='Arial', labelpad=10)
-    ax.set_ylabel('Parameterreihenfolge basierend auf dem Gesamtsensitivitätsindex', 
-                 fontsize=22, fontweight='medium', fontfamily='Arial', labelpad=10)
-    
-    ax.set_xticks(multiplied_sample_numbers)
-    ax.set_yticks(range(1, len(parameters) + 1))
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    
-    ax.set_xlim(600, multiplied_sample_numbers[-1] + 1200)
-    ax.set_ylim(21.5, 0.5)
-    
-    for spine in ax.spines.values():
-        spine.set_linewidth(1)
-    
-    ax.grid(False)
-    plt.tight_layout()
-    plt.subplots_adjust(right=0.75)
-    
-    # Save and display the final plot
-    plt.savefig(os.path.join(dir_path, 'SA_convergence_final.png'))
-    plt.show()
-    plt.close()
 
 def simulate(i, X, scr_gebaeude_id, fixed_variables_bd, calib_type, climate_file, start_time, end_time, output_resolution, ts_ori):
     be_data_original = inputs.setup_be_data_original_SA(scr_gebaeude_id, fixed_variables_bd, X)
@@ -130,6 +33,8 @@ def simulate(i, X, scr_gebaeude_id, fixed_variables_bd, calib_type, climate_file
     if calib_type == "TRY":
         return i, sim.cal_heating_energy_bd(building_data.iloc[0])
     
+
+
 def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, start_time_cal, end_time_cal, output_resolution, training_ratio, SA_sampling_lowerbound, SA_sampling_upperbound):
 
 
@@ -201,7 +106,7 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
         end_time1 = time.time()
         df_calc_time = pd.concat([df_calc_time, pd.DataFrame([{'Num_Samples_SA': SA_num_samples, 'Calc_time': end_time1 - start_time1}])], ignore_index=True)
 
-        new_folder_name = "SA_convergence_{}_{}_{}_{}_sample_no_{}".format(calib_type, scr_gebaeude_id, output_resolution, training_ratio, SA_num_samples)
+        new_folder_name = "SA/SA_convergence_{}_{}_{}_{}_sample_no_{}".format(calib_type, scr_gebaeude_id, output_resolution, training_ratio, SA_num_samples)
         new_folder_path = os.path.join(paths.DATA_DIR, new_folder_name)
         os.makedirs(new_folder_path, exist_ok=True)
         DF_Y = pd.DataFrame(Y)
@@ -209,9 +114,6 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
 
         total_Si, first_Si, second_Si = sobol_results.to_df()
 
-        total_Si.plot()
-        plt.title('SA Convergence for {} Samples'.format(SA_num_samples))
-        plt.savefig(os.path.join(new_folder_path, 'SA_convergence_{}_samples.png'.format(SA_num_samples)))
 
         total_Si.to_excel(os.path.join(new_folder_path, "TotalSi_{}_{}.xlsx".format(scr_gebaeude_id, SA_num_samples)))
         first_Si.to_excel(os.path.join(new_folder_path, "FirstSi_{}_{}.xlsx".format(scr_gebaeude_id, SA_num_samples)))
@@ -240,7 +142,7 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
                 converged_sample_size = SA_num_samples
                 sa_end = time.time()
                 sa_conv_time=sa_end-sa_start
-                print("Time:", sa_conv_time)
+                print(f"Computational time for the Sensitivity Analysis to perform is {sa_conv_time:.2f} seconds ({sa_conv_time/60:.2f} minutes)")
 
                 if output_resolution == None:
                     total_Si.to_excel(os.path.join(paths.DATA_DIR, "SA/{}/{}/TotalSi_{}_samples.xlsx".format(scr_gebaeude_id, output_resolution, converged_sample_size)))  
@@ -248,9 +150,17 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
                     total_Si.to_excel(os.path.join(paths.DATA_DIR, "SA/{}/{}/TotalSi_{}_obs_train_{}_samples.xlsx".format(scr_gebaeude_id, output_resolution, training_ratio, converged_sample_size)))
 
                 break
-            
-           
-    df_calc_time.to_excel(os.path.join(paths.CTRL_DIR, f'SA_Convergence_all_results_{calib_type}_{scr_gebaeude_id}_{output_resolution}_{training_ratio}.xlsx'), index=False)
+
+
+    dir_path = os.path.join(paths.CTRL_DIR, f'{scr_gebaeude_id}')
+    try:
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+    except FileExistsError:
+        # Another process in the multiprocessing may have created the directory already; just pass
+        pass
+
+    df_calc_time.to_excel(os.path.join(dir_path, f'SA_Convergence_all_results_{calib_type}_{scr_gebaeude_id}_{output_resolution}_{training_ratio}.xlsx'), index=False)
 
     if converged_sample_size:
         print(f"The sample size for which the ranking of the top five parameters doesn't change compared to the previous sample size is {converged_sample_size}.")
@@ -261,10 +171,6 @@ def find_converged_sa_sample_size(scr_gebaeude_id, calib_type, climate_file, sta
         converged_sample_size = 2**SA_sampling_upperbound
         sa_converged = 0
     
-    #sa_converged =1 
-    #converged_sample_size  = 64  
-    if sa_converged:
-        plot_rankings_from_files(scr_gebaeude_id, calib_type, output_resolution, training_ratio, sample_sizes, converged_sample_size)
     
-    return converged_sample_size, sa_converged, sa_conv_time
+    return converged_sample_size, sa_converged, sa_conv_time, sample_sizes, total_Si
 

@@ -1,0 +1,15 @@
+Summary Statistics for Evaluation Metrics:
+
+       Simulation    CV(RMSE)          R2
+count  100.000000  100.000000  100.000000
+mean    50.500000    3.431025    0.881486
+std     29.011492    0.651545    0.055805
+min      1.000000    2.929804    0.599193
+25%     25.750000    3.042902    0.873824
+50%     50.500000    3.224647    0.898923
+75%     75.250000    3.602833    0.909996
+max    100.000000    6.421318    0.916562
+
+Best Performing Simulations:
+Lowest CV(RMSE): Simulation 30.0, CV(RMSE) = 2.93
+Highest R2: Simulation 30.0, R2 = 0.9166

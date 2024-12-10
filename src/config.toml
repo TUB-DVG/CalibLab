@@ -1,0 +1,28 @@
+[general]
+scr_gebaeude_id = 30034001
+calib_type = "AMY"
+output_resolution = "Y"
+climate_file = "AMY_2010_2022.epw"
+num_bc_param = 5
+training_ratio = 75
+
+[sensitivity_analysis]
+SA_Convergence_Required = "Y"
+SA_sampling_lowerbound = 4
+SA_sampling_upperbound = 9
+
+[gaussian_process]
+GP_Convergence_Required = "Y"
+min_gp_samples = 30
+max_gp_samples = 400
+step_gp = 10
+rmse_threshold = 0.0007
+gp_test_size = 0.25
+
+[bayesian_calibration]
+draws = 100
+tune = 200
+chains = 4
+threshold = 1.01
+
+

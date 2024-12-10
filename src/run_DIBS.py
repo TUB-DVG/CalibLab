@@ -1,6 +1,7 @@
 from datetime import datetime
 import numpy as np
 import pandas as pd
+import time
 import os
 import inputs
 import DIBS.data_preprocessing.breitenerhebung.dataPreprocessingBE as preprocessing
@@ -28,6 +29,7 @@ def run_model(scr_gebaeude_id, climate_file, start_time, end_time, output_resolu
         # Another process in the multiprocessing may have created the directory already; just pass
         pass
 
+    start_calc = time.time()
 
     variables_df = inputs.get_building_inputdata(scr_gebaeude_id)
     be_data_original = inputs.setup_be_data_original(scr_gebaeude_id, variables_df)
@@ -55,6 +57,10 @@ def run_model(scr_gebaeude_id, climate_file, start_time, end_time, output_resolu
         start = datetime.strptime(f'{str_time}-12-31', '%Y-%m-%d')
         end = datetime.strptime(f'{fnsh_time}-12-31', '%Y-%m-%d')
         df.to_csv(os.path.join(paths.RES_DIR, f'DIBS_sim/{scr_gebaeude_id}/{output_resolution}/{training_ratio}/HeatingEnergy_{start.year}-{start.month}-{start.day}_{end.year}-{end.month}-{end.day}.csv'), sep=';', index=False)
+
+        end_calc = time.time()
+
+    print(f"Computational time for DIBS model to run is {(end_calc-start_calc):.2f} seconds ({(end_calc-start_calc)/60:.2f} minutes)")
 
     return HeatingEnergy_sum
 

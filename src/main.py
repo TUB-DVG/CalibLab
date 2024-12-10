@@ -1,6 +1,5 @@
 import os
 os.chdir(os.path.join(os.getcwd(), 'src'))
-
 import time
 import pandas as pd
 import numpy as np
@@ -9,6 +8,8 @@ import multiprocessing as mp
 from functools import partial
 from sklearn.gaussian_process.kernels import RationalQuadratic
 from sklearn.metrics import r2_score
+import toml
+
 try:
     import inputs 
 except:
@@ -28,6 +29,33 @@ from BayesianCalibration import run_calibration
 from multisimulationFunction import run_simulation
 
 
+# Extract settings from the configuration file
+config = toml.load("config.toml")
+scr_gebaeude_id = config["general"]["scr_gebaeude_id"]
+calib_type = config["general"]["calib_type"]
+output_resolution = config["general"]["output_resolution"]
+climate_file = config["general"]["climate_file"]
+num_bc_param = config["general"]["num_bc_param"]
+training_ratio = config["general"]["training_ratio"]
+
+SA_Convergence_Required = config["sensitivity_analysis"]["SA_Convergence_Required"]
+SA_sampling_lowerbound = config["sensitivity_analysis"]["SA_sampling_lowerbound"]
+SA_sampling_upperbound = config["sensitivity_analysis"]["SA_sampling_upperbound"]
+
+GP_Convergence_Required = config["gaussian_process"]["GP_Convergence_Required"]
+min_gp_samples = config["gaussian_process"]["min_gp_samples"]
+max_gp_samples = config["gaussian_process"]["max_gp_samples"]
+step_gp = config["gaussian_process"]["step_gp"]
+rmse_threshold = config["gaussian_process"]["rmse_threshold"]
+gp_test_size = config["gaussian_process"]["gp_test_size"]
+
+draws = config["bayesian_calibration"]["draws"]
+tune = config["bayesian_calibration"]["tune"]
+chains = config["bayesian_calibration"]["chains"]
+threshold = config["bayesian_calibration"]["threshold"]
+
+
+
 
 def calculate_cvrmse_r2(measured, simulated):
     '''Calculate CV(RMSE) and R2 for a single simulation run.'''
@@ -37,40 +65,14 @@ def calculate_cvrmse_r2(measured, simulated):
     return cvrmse, r2
 
 
-
 def main():
     start_process = time.time()
-
-    ''' INPUTS '''
-    scr_gebaeude_id = 30387001          # Building ID
-    calib_type = 'AMY'                  # AMY: Actual Meteorological Year, TRY: Test Reference Year (works only for Germany)
-    output_resolution = 'M'             # Time resolution for the metered data and calibration: Y = Yearly, M = Monthly, W = Weekly, etc, None = for TRY version
-    climate_file = 'AMY_2010_2022.epw'  # Name of the climate file
-    num_bc_param = 5                    # Number of model parameters to be calibrated
-
-
-    ''' OPTIONAL INPUTS '''
-    SA_Convergence_Required = 'Y'       # Preference to run automatized convergence check for Sensitivity Analysis
-    SA_sampling_lowerbound = 4          # Minimum number of samples (N) for Sensitivity Analysis ((N*(2D+2))). D=Dimensions, number of parameters
-    SA_sampling_upperbound = 9          # Maximum number of samples for Sensitivity Analysis (This limit prevents excessively long runtimes if the sensitivity index parameter order does not converge)
-    GP_Convergence_Required = 'Y'       # Preference to run automatized convergence check for meta-model creation
-    min_gp_samples = 30                 # Minimum number of samples for meta-model training
-    max_gp_samples = 400                # Maximum number of samples for meta-model training
-    step_gp = 10                        # Increase in sample size for each new meta-model training
-    rmse_threshold = 0.0007             # RMSE criteria for the meta-model
-    gp_test_size = 25/100               # Proportion of samples for GP to be used for the evaluation of the meta-model
-    training_ratio = 75                 # Percentage of observed data to be used for the calibration
-    draws, tune, chains = 100, 200, 4   # Bayesian Calibration parameters
-
-
 
     ''' IMPORT DATA '''
     metered=pd.read_excel(os.path.join(paths.DATA_DIR, 'HeatEnergyDemand_{}_{}.xlsx'.format(scr_gebaeude_id, output_resolution)), index_col=0)
     nr_train_data = round(metered[1:].shape[0]*training_ratio/100)
     start_time_cal, end_time_cal = metered.index[0].strftime('%Y-%m-%d %H:%M:%S'), metered.index[nr_train_data].strftime('%Y-%m-%d %H:%M:%S')
     start_time, end_time = metered.index[0].strftime('%Y-%m-%d %H:%M:%S'), metered.index[-1].strftime('%Y-%m-%d %H:%M:%S')
-
-
 
     ''' (0) Process Controll File'''
     df = pd.DataFrame()

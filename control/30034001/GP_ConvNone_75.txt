@@ -1,0 +1,18 @@
+GP Convergence Results
+======================
+
+Building ID: 30034001
+  Kernel Index: 1
+Calibration Type: TRY
+Number of Observations for Training: 75
+Total CPU cores: 16
+Cores used for processing: 14
+
+Best GP Configuration:
+  Kernel: 1**2 * RationalQuadratic(alpha=1, length_scale=1)
+  Number of Samples: 80
+  R²: 1.0000
+
+  RMSE_NORM: 0.0007
+
+Normalised RMSE threshold of 0.0007 and R² > 0.98 reached. Search stopped early.

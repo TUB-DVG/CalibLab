@@ -334,3 +334,33 @@ def CF_factors(scr_gebaeude_id, start_time, end_time):
 
         return Climate_Factor
 
+
+def name_mapping():
+        
+    name_mapping = {
+    'q25_1': 'Max occupancy',
+    'aw_fl': 'Exterior wall area (above ground)',
+    'qd1': 'Window/Wall area ratio',
+    'facade_area': 'Facade area',
+    'geb_f_flaeche_n_iwu': 'North facade',
+    'd_fl_be': 'Roof area',
+    'nrf_2': 'Nettoarea',
+    'ebf': 'Energy reference area',
+    'n_og': 'Number of floors (above ground)',
+    'geb_f_hoehe_mittel_iwu': 'Height',
+    'u_fen': 'U-value windows',
+    'u_aw': 'U-value exterior walls',
+    'd_u_ges': 'U-value roof',
+    'u_ug': 'U-value base',
+    'heat_recovery_efficiency': 'Heat recovery efficiency',
+    'thermal_capacitance': 'Thermal capacitance',
+    'heating_coefficient': 'Energy expenditure factor',
+    'glass_solar_transmittance': 'Glass solar transmittance',
+    'qd8': 'Glass shading factor',
+    'p_j_lx': 'Lighting power density',
+    'k_L': 'Lamp type adjustment factor',
+    'model_discrepancy': 'Model discrepancy',
+    'error_obs': 'Error in measured data',
+    'sim_result': 'Simulation outputs'}
+
+    return name_mapping
